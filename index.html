@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skynners World vs Infinity Deathz</title>
+    <style>
+        :root {
+            --red: #ff0000;
+            --black: #000000;
+            --white: #ffffff;
+            --speed: 0.9s;
+            --font-main: 'Impact', 'Arial Black', sans-serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--black);
+            font-family: var(--font-main);
+            overflow: hidden;
+            perspective: 2000px;
+        }
+
+        #master-container {
+            position: relative;
+            width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transition: transform var(--speed) cubic-bezier(0.7, 0, 0.2, 1);
+        }
+
+        .scene {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+        }
+
+        /* --- MENÚ PRINCIPAL --- */
+        #split-menu { z-index: 10; }
+        .half {
+            width: 50%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.5s ease;
+        }
+        #left-half { background-color: var(--black); border-right: 1px solid #222; }
+        #right-half { background-color: var(--black); }
+
+        .logo-sw { font-size: clamp(2rem, 7vw, 4.5rem); text-transform: uppercase; text-align: center; line-height: 0.9; }
+        .skynners { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .world { color: var(--red); text-shadow: 0 0 10px rgba(255,0,0,0.4); }
+        .logo-id { font-size: clamp(2rem, 7vw, 4.5rem); color: var(--red); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
+
+        .subtitle { font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; margin-top: 20px; text-transform: uppercase; }
+
+        /* --- GALERÍAS (Ajuste de centrado y márgenes) --- */
+        .gallery-scene {
+            opacity: 0; pointer-events: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+            padding-bottom: 150px; /* Espacio generoso abajo */
+            overflow-y: auto;
+        }
+
+        #gallery-sw { transform: translateZ(-2000px) rotateY(40deg); background: radial-gradient(circle, #151515 0%, #000 100%); }
+        #gallery-id { transform: translateZ(-2000px) rotateY(-40deg); background: radial-gradient(circle, #200000 0%, #000 100%); }
+
+        .show-sw #gallery-sw, .show-id #gallery-id { opacity: 1; transform: translateZ(0) rotateY(0); pointer-events: auto; z-index: 20; }
+        .show-sw #split-menu, .show-id #split-menu { opacity: 0; transform: translateZ(-1500px) scale(0.6); }
+
+        .back-arrow { position: fixed; top: 30px; left: 30px; font-size: 3rem; color: var(--red); cursor: pointer; z-index: 100; }
+
+        /* --- CUADRÍCULA CONCENTRADA AL CENTRO --- */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            width: 60%; /* Esto hace que se aleje de los bordes laterales */
+            max-width: 1000px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1/1;
+            background: #111;
+            border: 1px solid #333;
+            overflow: hidden;
+            cursor: zoom-in;
+            transition: all 0.4s ease;
+        }
+
+        .photo-item:hover {
+            border-color: var(--red);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(50%); transition: 0.5s; }
+        .photo-item:hover img { filter: grayscale(0%); }
+
+        /* --- MODAL --- */
+        #photo-modal {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none; justify-content: center; align-items: center;
+            z-index: 2000; cursor: zoom-out;
+        }
+        #modal-img { max-width: 90%; max-height: 90%; border: 3px solid var(--red); }
+        #photo-modal.active { display: flex; }
+
+        .gallery-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        .title-underline {
+            border-bottom: 3px solid var(--red);
+            padding-bottom: 15px;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="master-container">
+        <section id="split-menu" class="scene">
+            <div id="left-half" class="half" onclick="openGallery('sw')">
+                <h1 class="logo-sw"><span class="skynners">Skynners</span><br><span class="world">World</span></h1>
+                <p class="subtitle" style="color: #bbb;">El inicio de todo...</p>
+            </div>
+            <div id="right-half" class="half" onclick="openGallery('id')">
+                <h1 class="logo-id">Infinity Deathz</h1>
+                <p class="subtitle" style="color: #900;">Bienvenido al vacio</p>
+            </div>
+        </section>
+
+        <section id="gallery-sw" class="scene gallery-scene">
+            <div class="back-arrow" onclick="closeGalleries()">&#129044;</div>
+            <div class="gallery-header">
+                <h1 class="logo-sw title-underline">
+                    <span class="skynners">Skynners</span><br><span class="world">World</span>
+                </h1>
+            </div>
+            <div class="photo-grid">
+                <div class="photo-item" onclick="openModal('sw1.png')"><img src="sw1.png"></div>
+                <div class="photo-item" onclick="openModal('sw2.png')"><img src="sw2.png"></div>
+                <div class="photo-item" onclick="openModal('sw3.png')"><img src="sw3.png"></div>
+            </div>
+        </section>
+
+        <section id="gallery-id" class="scene gallery-scene">
+            <div class="back-arrow" onclick="closeGalleries()">&#129044;</div>
+            <div class="gallery-header">
+                <h1 class="logo-id title-underline">Infinity Deathz</h1>
+            </div>
+            <div class="photo-grid">
+                <div class="photo-item" onclick="openModal('id1.png')"><img src="id1.png"></div>
+                <div class="photo-item" onclick="openModal('id2.png')"><img src="id2.png"></div>
+                <div class="photo-item" onclick="openModal('id3.png')"><img src="id3.png"></div>
+                <div class="photo-item" onclick="openModal('id4.png')"><img src="id4.png"></div>
+                <div class="photo-item" onclick="openModal('id5.png')"><img src="id5.png"></div>
+                <div class="photo-item" onclick="openModal('id6.png')"><img src="id6.png"></div>
+                <div class="photo-item" onclick="openModal('id7.png')"><img src="id7.png"></div>
+                <div class="photo-item" onclick="openModal('id8.png')"><img src="id8.png"></div>
+                <div class="photo-item" onclick="openModal('id9.png')"><img src="id9.png"></div>
+                <div class="photo-item" onclick="openModal('id10.png')"><img src="id10.png"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="photo-modal" onclick="closeModal()">
+        <img src="" id="modal-img">
+    </div>
+
+    <script>
+        const container = document.getElementById('master-container');
+        const modal = document.getElementById('photo-modal');
+        const modalImg = document.getElementById('modal-img');
+
+        function openGallery(type) {
+            container.classList.add('show-' + type);
+        }
+
+        function closeGalleries() {
+            container.classList.remove('show-sw', 'show-id');
+        }
+
+        function openModal(src) {
+            modalImg.src = src;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
